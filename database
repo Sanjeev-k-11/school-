@@ -1,0 +1,399 @@
+-- Table: admissions_details
+CREATE TABLE admissions_details (
+    id INT(11) NOT NULL PRIMARY KEY,
+    photo_url TEXT DEFAULT NULL,
+    pdf_url VARCHAR(512) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Table: admissions_settings
+CREATE TABLE admissions_settings (
+    setting_key VARCHAR(255) NOT NULL PRIMARY KEY,
+    setting_value TEXT DEFAULT NULL
+);
+
+-- Table: admission_dates
+CREATE TABLE admission_dates (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    event_name VARCHAR(255) NOT NULL,
+    event_date DATE NOT NULL,
+    display_order INT(11) DEFAULT 0
+);
+
+-- Table: classes
+CREATE TABLE classes (
+    class_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(50) NOT NULL
+);
+
+-- Table: class_timetables
+CREATE TABLE class_timetables (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(50) NOT NULL,
+    day_of_week ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+    period_number INT(11) NOT NULL,
+    subject_name VARCHAR(100) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    teacher_name VARCHAR(100) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (class_name) -- 'MUL' indicates an index
+);
+
+-- Table: contact_form_submissions
+CREATE TABLE contact_form_submissions (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: contact_replies
+CREATE TABLE contact_replies (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    submission_id INT(11) NOT NULL,
+    replied_by_staff_name VARCHAR(255) NOT NULL,
+    reply_message TEXT NOT NULL,
+    replied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (submission_id), -- 'MUL' indicates an index
+    FOREIGN KEY (submission_id) REFERENCES contact_form_submissions(id) ON DELETE CASCADE
+);
+
+-- Table: events
+CREATE TABLE events (
+    event_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    event_name VARCHAR(255) NOT NULL,
+    event_description TEXT DEFAULT NULL,
+    event_date_time DATETIME NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by_name VARCHAR(255) DEFAULT NULL
+);
+
+-- Table: expenses
+CREATE TABLE expenses (
+    expense_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    expense_date DATE NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(255) DEFAULT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(100) DEFAULT NULL,
+    recorded_by_user_id INT(11) DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (expense_date), -- 'MUL' indicates an index
+    INDEX (category) -- 'MUL' indicates an index
+    -- FOREIGN KEY (recorded_by_user_id) REFERENCES users(id) ON DELETE SET NULL -- Assuming staff/admin records expenses
+);
+
+-- Table: feedback_submissions
+CREATE TABLE feedback_submissions (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    rating INT(11) NOT NULL,
+    feedback_text TEXT NOT NULL,
+    submission_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: gallery_images
+CREATE TABLE gallery_images (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) DEFAULT NULL, -- Assuming 'public_id' in 'Default' was a display error for the title field
+    public_id VARCHAR(255) NOT NULL UNIQUE,
+    secure_url VARCHAR(500) NOT NULL,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: group_chats
+CREATE TABLE group_chats (
+    group_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    group_name VARCHAR(255) NOT NULL,
+    messaging_mode ENUM('open_chat','announcements_only') NOT NULL DEFAULT 'open_chat',
+    created_by_role ENUM('teacher','principal','staff') NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by_ref_id INT(11) DEFAULT NULL,
+    created_by_type VARCHAR(50) DEFAULT NULL
+);
+
+-- Table: group_chat_members
+CREATE TABLE group_chat_members (
+    member_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    group_id INT(11) DEFAULT NULL,
+    member_type ENUM('staff','student') DEFAULT NULL,
+    member_ref_id INT(11) DEFAULT NULL,
+    INDEX (group_id), -- 'MUL' indicates an index
+    FOREIGN KEY (group_id) REFERENCES group_chats(group_id) ON DELETE CASCADE
+    -- No simple FK for member_ref_id as it depends on member_type (can refer to staff or students)
+);
+
+-- Table: group_chat_messages
+CREATE TABLE group_chat_messages (
+    message_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    group_id INT(11) DEFAULT NULL,
+    sender_type ENUM('staff','student') DEFAULT NULL,
+    sender_ref_id INT(11) DEFAULT NULL,
+    message TEXT NOT NULL,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX (group_id), -- 'MUL' indicates an index
+    FOREIGN KEY (group_id) REFERENCES group_chats(group_id) ON DELETE CASCADE
+    -- No simple FK for sender_ref_id as it depends on sender_type (can refer to staff or students)
+);
+
+-- Table: group_chat_read_status
+CREATE TABLE group_chat_read_status (
+    group_id INT(11) NOT NULL,
+    member_ref_id INT(11) NOT NULL,
+    member_type ENUM('student','staff') NOT NULL,
+    last_read_message_id INT(11) DEFAULT 0,
+    PRIMARY KEY (group_id, member_ref_id, member_type),
+    FOREIGN KEY (group_id) REFERENCES group_chats(group_id) ON DELETE CASCADE
+    -- No simple FK for member_ref_id as it depends on member_type (can refer to staff or students)
+);
+
+-- Table: holidays
+CREATE TABLE holidays (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    holiday_name VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    created_by_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: homework
+CREATE TABLE homework (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(50) NOT NULL,
+    subject_name VARCHAR(100) NOT NULL,
+    teacher_id INT(11) NOT NULL,
+    teacher_name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    due_date DATE NOT NULL,
+    file_path VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (class_name), -- 'MUL' indicates an index
+    INDEX (teacher_id), -- 'MUL' indicates an index
+    FOREIGN KEY (teacher_id) REFERENCES staff(staff_id) ON DELETE CASCADE
+);
+
+-- Table: income
+CREATE TABLE income (
+    income_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    income_date DATE NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(255) DEFAULT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(100) DEFAULT NULL,
+    recorded_by_user_id INT(11) DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (income_date), -- 'MUL' indicates an index
+    INDEX (category) -- 'MUL' indicates an index
+    -- FOREIGN KEY (recorded_by_user_id) REFERENCES users(id) ON DELETE SET NULL -- Assuming staff/admin records income
+);
+
+-- Table: password_resets
+CREATE TABLE password_resets (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    user_id INT(11) NOT NULL,
+    user_role VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    otp VARCHAR(10) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    is_used TINYINT(1) DEFAULT 0,
+    INDEX (email) -- 'MUL' indicates an index
+);
+
+-- Table: quizzes
+CREATE TABLE quizzes (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(255) NOT NULL,
+    subject_name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    teacher_id INT(11) NOT NULL,
+    teacher_name VARCHAR(255) NOT NULL,
+    quiz_data LONGTEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (teacher_id), -- 'MUL' indicates an index
+    FOREIGN KEY (teacher_id) REFERENCES staff(staff_id) ON DELETE CASCADE
+);
+
+-- Table: quiz_submissions
+CREATE TABLE quiz_submissions (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    quiz_id INT(11) NOT NULL,
+    student_id INT(11) NOT NULL,
+    student_name VARCHAR(255) NOT NULL,
+    score INT(11) NOT NULL,
+    submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (quiz_id), -- 'MUL' indicates an index
+    INDEX (student_id), -- 'MUL' indicates an index
+    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(user_id) ON DELETE CASCADE
+);
+
+-- Table: required_documents
+CREATE TABLE required_documents (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    document_name VARCHAR(255) NOT NULL,
+    display_order INT(11) DEFAULT 0
+);
+
+-- Table: school_books
+CREATE TABLE school_books (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(50) NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    book_title VARCHAR(255) NOT NULL,
+    publisher VARCHAR(100) NOT NULL
+);
+
+-- Table: staff
+CREATE TABLE staff (
+    staff_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    staff_name VARCHAR(255) NOT NULL,
+    mobile_number VARCHAR(20) NOT NULL,
+    unique_id VARCHAR(4) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    salary DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    subject_taught VARCHAR(100) DEFAULT NULL,
+    classes_taught TEXT DEFAULT NULL,
+    photo_filename VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    session_id VARCHAR(255) DEFAULT NULL,
+    INDEX (role) -- 'MUL' indicates an index
+);
+
+-- Table: staff_timetables
+CREATE TABLE staff_timetables (
+    staff_timetable_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    staff_id INT(11) NOT NULL,
+    day_of_week ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+    time_slot VARCHAR(50) NOT NULL,
+    class_taught VARCHAR(50) NOT NULL,
+    subject_taught VARCHAR(100) NOT NULL,
+    INDEX (staff_id), -- 'MUL' indicates an index
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id) ON DELETE CASCADE
+);
+
+-- Table: stats
+CREATE TABLE stats (
+    id INT(11) NOT NULL PRIMARY KEY,
+    students INT(11) DEFAULT NULL,
+    faculty INT(11) DEFAULT NULL,
+    awards INT(11) DEFAULT NULL,
+    years INT(11) DEFAULT NULL
+);
+
+-- Table: students
+CREATE TABLE students (
+    user_id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    full_name VARCHAR(255) NOT NULL,
+    father_name VARCHAR(255) NOT NULL,
+    mother_name VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    virtual_id VARCHAR(5) UNIQUE DEFAULT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) DEFAULT NULL,
+    whatsapp_number VARCHAR(20) DEFAULT NULL,
+    current_class VARCHAR(50) NOT NULL,
+    previous_class VARCHAR(50) DEFAULT NULL,
+    previous_school VARCHAR(255) DEFAULT NULL,
+    previous_marks_percentage DECIMAL(5,2) DEFAULT NULL,
+    current_marks DECIMAL(5,2) DEFAULT NULL,
+    student_fees DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    optional_fees DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    address TEXT DEFAULT NULL,
+    pincode VARCHAR(20) DEFAULT NULL,
+    state VARCHAR(100) DEFAULT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    photo_filename VARCHAR(255) DEFAULT NULL,
+    roll_number VARCHAR(50) DEFAULT NULL,
+    village VARCHAR(100) DEFAULT NULL,
+    date_of_birth DATE DEFAULT NULL,
+    van_fee DECIMAL(10,2) DEFAULT NULL,
+    takes_van TINYINT(1) DEFAULT 0,
+    session_id VARCHAR(255) DEFAULT NULL,
+    INDEX (full_name) -- 'MUL' indicates an index
+);
+
+-- Table: student_exam_results
+CREATE TABLE student_exam_results (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    student_id INT(11) NOT NULL,
+    academic_year VARCHAR(15) NOT NULL,
+    exam_name VARCHAR(100) NOT NULL,
+    subject_name VARCHAR(100) NOT NULL,
+    marks_obtained DECIMAL(5,2) NOT NULL,
+    max_marks DECIMAL(5,2) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (student_id), -- 'MUL' indicates an index
+    INDEX (academic_year), -- 'MUL' indicates an index
+    FOREIGN KEY (student_id) REFERENCES students(user_id) ON DELETE CASCADE
+);
+
+-- Table: student_fee_structures
+CREATE TABLE student_fee_structures (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    student_id INT(11) NOT NULL,
+    academic_year VARCHAR(9) NOT NULL,
+    base_monthly_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    monthly_van_fee_component DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (student_id), -- 'MUL' indicates an index
+    FOREIGN KEY (student_id) REFERENCES students(user_id) ON DELETE CASCADE
+);
+
+-- Table: student_monthly_fees
+CREATE TABLE student_monthly_fees (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    student_id INT(11) NOT NULL,
+    fee_year YEAR(4) NOT NULL,
+    fee_month TINYINT(2) NOT NULL,
+    base_monthly_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    monthly_van_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    monthly_exam_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    monthly_electricity_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    amount_due DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    amount_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    is_paid TINYINT(1) NOT NULL DEFAULT 0,
+    payment_date DATE DEFAULT NULL,
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (student_id), -- 'MUL' indicates an index
+    FOREIGN KEY (student_id) REFERENCES students(user_id) ON DELETE CASCADE
+);
+
+-- Table: users
+CREATE TABLE users (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin','staff','student') NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    session_id VARCHAR(255) DEFAULT NULL
+);
+
+-- Table: vacation_homework
+CREATE TABLE vacation_homework (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(50) NOT NULL,
+    subject_name VARCHAR(100) NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    display_order INT(11) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
