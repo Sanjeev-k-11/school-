@@ -13,9 +13,9 @@ use Cloudinary\Exception\Upload\UploadException; // Import the specific upload e
 // Configure Cloudinary (replace with your actual credentials)
 Configuration::instance([
   'cloud' => [
-    'cloud_name' => 'do9mane7a', // Replace with your Cloud Name
-    'api_key' => '269318732537666',       // Replace with your API Key
-    'api_secret' => 'h_bfpaCLme-m3T20BEyyH6TfHEo'], // Replace with your API Secret
+    'cloud_name' => 'hhhhhhhhh', // Replace with your Cloud Name
+    'api_key' => '5555555555555555555',       // Replace with your API Key
+    'api_secret' => 'k_kkkkkkkkkkk_kkkkkkkkkkkk'], // Replace with your API Secret
   'url' => [
     'secure' => true]]);
 
