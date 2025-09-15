@@ -26,8 +26,7 @@
     -->
     <img src="https://img.shields.io/github/stars/Sanjeev-k-11/your-repo-name?style=social" alt="GitHub Stars">
     <img src="https://img.shields.io/github/forks/Sanjeev-k-11/your-repo-name?style=social" alt="GitHub Forks">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
-</p>
+ </p>
 
 </div>
 
@@ -214,19 +213,3 @@ Contributions are what make the open-source community such an amazing place to l
 3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4.  Push to the Branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` file for more information.
-
-## 📧 Contact
-
-**Sanjeev-k-11** - [@your_twitter_handle](https://twitter.com/your_twitter_handle) - your.email@example.com
-
-Project Link: [https://github.com/Sanjeev-k-11/your-repo-name](https://github.com/Sanjeev-k-11/your-repo-name)
-
----
-
-<div align="center">
-Made with ❤️ by Sanjeev-k-11
-</div>
