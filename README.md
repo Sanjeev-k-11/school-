@@ -38,16 +38,7 @@
 
 <br>
 
-<div align="center">
-  <!-- 
-    TODO: 
-    3. If you have a live demo, replace 'https://your-live-demo-link.com' with the actual URL.
-    If not, you can remove this section.
-  -->
-  <a href="https://your-live-demo-link.com" target="_blank">
-    <img src="https://img.shields.io/badge/View_Live_Demo-28a745?style=for-the-badge&logo=Internet-explorer&logoColor=white" alt="Live Demo">
-  </a>
-</div>
+
 
 <br>
 
